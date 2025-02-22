@@ -40,7 +40,7 @@ def send_email_with_tracking(recipient_email):
         msg['Subject'] = 'Tracked Email'
 
         # Use your Vercel-deployed URL here
-        vercel_tracking_url = "https://flask-hello-world-henna-gamma.vercel.app/pixel.png"
+        vercel_tracking_url = "https://banao-tan.vercel.app/pixel.png"
         html = f"""
         <html>
           <body>
