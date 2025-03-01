@@ -1,4 +1,4 @@
-import io2
+import io
 import smtplib
 import os
 from flask import Flask, request, send_file
