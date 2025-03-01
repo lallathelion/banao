@@ -24,7 +24,7 @@ def home():
 @app.route('/pixel.png')
 def tracking_pixel():
     """Serves a tracking pixel and logs email opens only when the pixel is requested."""
-    recipient_email = request.args.get("email", "Unknown")
+    recipient_email = request.args.get("email")
     print(f"📩 Email opened by: {recipient_email}")
     return send_file(io.BytesIO(TRACKING_PIXEL), mimetype='image/png')
 
