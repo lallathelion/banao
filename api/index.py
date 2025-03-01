@@ -1,7 +1,9 @@
 import io
 import smtplib
 import os
-from flask import Flask, request, send_file
+import threading
+from flask import Flask, request, send_file, jsonify
+
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
@@ -18,12 +20,10 @@ TRACKING_PIXEL = b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x
 
 @app.route('/')
 def home():
-    """Homepage to confirm the service is running."""
     return "✅ Tracking Pixel Service is Running!"
 
 @app.route('/pixel.png')
 def tracking_pixel():
-    """Serves a tracking pixel and logs email opens only when the pixel is requested."""
     recipient_email = request.args.get("email")
     print(f"📩 Email opened by: {recipient_email}")
     return send_file(io.BytesIO(TRACKING_PIXEL), mimetype='image/png')
@@ -40,7 +40,7 @@ def send_email_with_tracking(recipient_email):
         msg['To'] = recipient_email
         msg['Subject'] = 'Tracked Email'
 
-        # Use your Vercel-deployed URL here
+        # Tracking pixel URL
         vercel_tracking_url = f"https://banao-tan.vercel.app/pixel.png?email={recipient_email}"
         html = f"""
         <html>
@@ -60,13 +60,26 @@ def send_email_with_tracking(recipient_email):
         print(f"✅ Email sent successfully to {recipient_email} with tracking pixel.")
 
     except Exception as e:
-        print(f"❌ Error sending email: {e}")
+        print(f"❌ Error sending email to {recipient_email}: {e}")
 
-@app.route('/send-email/<recipient_email>')
-def trigger_email(recipient_email):
-    """Trigger sending an email with a tracking pixel."""
-    send_email_with_tracking(recipient_email)
-    return f"✅ Email sent to {recipient_email}"
+@app.route('/send-email/<path:emails>')
+def send_multiple_emails(emails):
+    """Send emails to multiple recipients using a URL path format."""
+    recipient_emails = emails.split("/")  # Split emails by '/'
+    
+    if not recipient_emails:
+        return jsonify({"error": "No email addresses provided"}), 400
+
+    threads = []
+    for email in recipient_emails:
+        thread = threading.Thread(target=send_email_with_tracking, args=(email,))
+        threads.append(thread)
+        thread.start()
+
+    for thread in threads:
+        thread.join()
+
+    return jsonify({"message": f"✅ Emails sent to {len(recipient_emails)} recipients."})
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=8080)
