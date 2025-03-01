@@ -45,7 +45,7 @@ def send_email_with_tracking(recipient_email):
         html = f"""
         <html>
           <body>
-            <p>Hello, this email contains a tracking pixel.</p>
+            <p>Hello, this side Akash singh lalla.</p>
             <img src="{vercel_tracking_url}" alt="" style="display:none;" />
           </body>
         </html>
