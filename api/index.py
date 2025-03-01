@@ -24,7 +24,8 @@ def home():
 @app.route('/pixel.png')
 def tracking_pixel():
     """Serves a tracking pixel and logs email opens only when the pixel is requested."""
-    print(f"📩 Email opened by: {request.remote_addr}")
+    recipient_email = request.args.get("email", "Unknown")
+    print(f"📩 Email opened by: {recipient_email}")
     return send_file(io.BytesIO(TRACKING_PIXEL), mimetype='image/png')
 
 def send_email_with_tracking(recipient_email):
@@ -40,7 +41,7 @@ def send_email_with_tracking(recipient_email):
         msg['Subject'] = 'Tracked Email'
 
         # Use your Vercel-deployed URL here
-        vercel_tracking_url = "https://banao-tan.vercel.app/pixel.png"
+        vercel_tracking_url = f"https://banao-tan.vercel.app/pixel.png?email={recipient_email}"
         html = f"""
         <html>
           <body>
