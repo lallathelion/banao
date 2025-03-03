@@ -44,7 +44,7 @@ print("IP ADDRESS : ", IP_ADDRESS)
 @app.route('/pixel.png')
 def tracking_pixel():
     recipient_email = request.args.get("email")
-    print(request.args.get("user"))
+    print(request.args)
     recipient_uuid = int(request.args.get("user"))
     print(f"📩 Email opened by: {recipient_email}")
     database.update_user_time(recipient_uuid)
@@ -65,7 +65,7 @@ def send_email_with_tracking(recipient_email):
         msg['Subject'] = 'Tracked Email'
 
         # Tracking pixel URL
-        vercel_tracking_url = f"http://{IP_ADDRESS}/pixel.png?email={recipient_email}?user={email_uuid}"
+        vercel_tracking_url = f"http://{IP_ADDRESS}/pixel.png?email={recipient_email}&user={email_uuid}"
         html = f"""
         <html>
           <body>
