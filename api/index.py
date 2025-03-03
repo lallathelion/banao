@@ -5,7 +5,7 @@ import threading
 from flask import Flask, request, send_file, jsonify
 import uuid
 from database import Database
-
+import socket
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
@@ -13,6 +13,8 @@ app = Flask(__name__)
 database = Database('mail_data.db')
 database.init_database()
 database.create_schema()
+
+
 
 # Load email credentials from environment variables
 EMAIL_ADDRESS = os.getenv("EMAIL_ADDRESS")
@@ -27,6 +29,14 @@ TRACKING_PIXEL = b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x
 def home():
     return "✅ Tracking Pixel Service is Running!"
 
+
+def get_ip_address():
+    sock = socket.socket()
+    sock.connect(('1.1.1.1', 80))
+    return sock.getsockname()[0]
+
+IP_ADDRESS = 'akashsinghlalla.pythonanywhere.com'
+print("IP ADDRESS : ", IP_ADDRESS)
 @app.route('/pixel.png')
 def tracking_pixel():
     recipient_email = request.args.get("email")
@@ -54,7 +64,7 @@ def send_email_with_tracking(recipient_email):
         msg['Subject'] = 'Tracked Email'
 
         # Tracking pixel URL
-        vercel_tracking_url = f"https://banao-tan.vercel.app/pixel.png?email={recipient_email}?user={email_uuid}"
+        vercel_tracking_url = f"http://{IP_ADDRESS}/pixel.png?email={recipient_email}?user={email_uuid}"
         html = f"""
         <html>
           <body>
@@ -63,6 +73,7 @@ def send_email_with_tracking(recipient_email):
           </body>
         </html>
         """
+        print(html)
         msg.attach(MIMEText(html, 'html'))
 
         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
@@ -97,5 +108,5 @@ def send_multiple_emails(emails):
 
     return jsonify({"message": f"✅ Emails sent to {len(recipient_emails)} recipients."})
 
-if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=8080)
+# if __name__ == '__main__':
+#     app.run(host=IP_ADDRESS, port=80)

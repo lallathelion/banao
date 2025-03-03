@@ -29,7 +29,7 @@ class Database:
 
 
     def init_database(self):
-        self.database = sqlite3.connect(self.filename)
+        self.database = sqlite3.connect(self.filename, check_same_thread=False)
         self.cursor = sqlite3.Cursor(self.database)
     
     def create_schema(self):
