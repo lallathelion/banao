@@ -10,7 +10,9 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 app = Flask(__name__)
-database = Database('mail_data.db')
+file_location = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'main_data.db') 
+database = Database(file_location)
+print(file_location)
 database.init_database()
 database.create_schema()
 
