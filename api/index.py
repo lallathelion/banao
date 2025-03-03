@@ -3,11 +3,16 @@ import smtplib
 import os
 import threading
 from flask import Flask, request, send_file, jsonify
+import uuid
+from database import Database
 
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 app = Flask(__name__)
+database = Database('mail_data.db')
+database.init_database()
+database.create_schema()
 
 # Load email credentials from environment variables
 EMAIL_ADDRESS = os.getenv("EMAIL_ADDRESS")
@@ -25,10 +30,18 @@ def home():
 @app.route('/pixel.png')
 def tracking_pixel():
     recipient_email = request.args.get("email")
+    try:
+        recipient_uuid = uuid.UUID(request.args.get("user"))
+    except:
+        print("Error while parsing uuid")
+        recipient_uuid = uuid.uuid4()
     print(f"📩 Email opened by: {recipient_email}")
+    database.update_user_time(recipient_uuid)
     return send_file(io.BytesIO(TRACKING_PIXEL), mimetype='image/png')
 
 def send_email_with_tracking(recipient_email):
+
+    email_uuid = uuid.uuid4()
     """Sends an email with a tracking pixel."""
     if not EMAIL_ADDRESS or not EMAIL_PASSWORD:
         print("❌ Email credentials are missing. Check environment variables.")
@@ -41,7 +54,7 @@ def send_email_with_tracking(recipient_email):
         msg['Subject'] = 'Tracked Email'
 
         # Tracking pixel URL
-        vercel_tracking_url = f"https://banao-tan.vercel.app/pixel.png?email={recipient_email}"
+        vercel_tracking_url = f"https://banao-tan.vercel.app/pixel.png?email={recipient_email}?user={email_uuid}"
         html = f"""
         <html>
           <body>
@@ -57,7 +70,9 @@ def send_email_with_tracking(recipient_email):
             server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
             server.sendmail(EMAIL_ADDRESS, recipient_email, msg.as_string())
 
+        database.insert_email_recipient(email_uuid, recipient_email)
         print(f"✅ Email sent successfully to {recipient_email} with tracking pixel.")
+        
 
     except Exception as e:
         print(f"❌ Error sending email to {recipient_email}: {e}")
@@ -72,9 +87,10 @@ def send_multiple_emails(emails):
 
     threads = []
     for email in recipient_emails:
-        thread = threading.Thread(target=send_email_with_tracking, args=(email,))
-        threads.append(thread)
-        thread.start()
+        send_email_with_tracking(email)
+        # thread = threading.Thread(target=send_email_with_tracking, args=(email,))
+        # threads.append(thread)
+        # thread.start()
 
     for thread in threads:
         thread.join()
