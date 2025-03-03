@@ -2,6 +2,22 @@ import sqlite3
 import datetime
 import uuid
 
+mysql_schema = """
+CREATE TABLE IF NOT EXISTS public_mails(
+    `email_uuid` BIGINT PRIMARY KEY,
+    `email_recipient` VARCHAR(255) NOT NULL,
+    `sent_timpestamp` DATETIME NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS opens_at(
+    `email_uuid` BIGINT,
+    `opened_at` DATETIME NOT NULL,
+    FOREIGN KEY(`email_uuid`) REFERENCES public_mails(`email_uuid`)
+);
+
+"""
+
+
 schema = {
     'public': 'public_mails',
     'open_table': 'opens_at',
@@ -15,8 +31,8 @@ INSERT_RECIPIENT = "INSERT INTO {0}({1}, {2}, {3}) VALUES (?, ?, ?);".format(
         schema['public'], schema['uuid'], schema['recipient'], schema['sent'])
 OPENED_EMAIL = "INSERT INTO {0}({1}, {2}) VALUES (?, ?);".format(
     schema['open_table'], schema['uuid'], schema['opened'])
-# print(INSERT_RECIPIENT)
-# print(OPENED_EMAIL)
+print(INSERT_RECIPIENT)
+print(OPENED_EMAIL)
 
 
 class Database:
@@ -30,12 +46,10 @@ class Database:
 
     def init_database(self):
         self.database = sqlite3.connect(self.filename, check_same_thread=False)
-        self.cursor = sqlite3.Cursor(self.database)
+        self.cursor = self.database.cursor()
     
     def create_schema(self):
-        with open('./schema.sql') as f:
-            script = f.read()
-        print(self.cursor.executescript(script))
+        print(self.cursor.executescript(mysql_schema))
     
     def insert_email_recipient(self, email_uuid:uuid.UUID, email_recipient):
         date = datetime.datetime.now().timestamp()
