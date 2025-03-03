@@ -45,14 +45,14 @@ print("IP ADDRESS : ", IP_ADDRESS)
 def tracking_pixel():
     recipient_email = request.args.get("email")
     print(request.args.get("user"))
-    recipient_uuid = uuid.UUID(request.args.get("user"))
+    recipient_uuid = int(request.args.get("user"))
     print(f"📩 Email opened by: {recipient_email}")
     database.update_user_time(recipient_uuid)
     return send_file(io.BytesIO(TRACKING_PIXEL), mimetype='image/png')
 
 def send_email_with_tracking(recipient_email):
 
-    email_uuid = uuid.uuid4()
+    email_uuid = uuid.uuid4().int
     """Sends an email with a tracking pixel."""
     if not EMAIL_ADDRESS or not EMAIL_PASSWORD:
         print("❌ Email credentials are missing. Check environment variables.")
