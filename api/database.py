@@ -51,17 +51,17 @@ class Database:
     def create_schema(self):
         print(self.cursor.executescript(mysql_schema))
     
-    def insert_email_recipient(self, email_uuid:uuid.UUID, email_recipient):
+    def insert_email_recipient(self, email_uuid, email_recipient):
         print(f"SEND EMAIL UUID : {email_uuid}")
         date = datetime.datetime.now().timestamp()
-        uuid_int = email_uuid.int%(1E+20)
+        uuid_int = email_uuid%(1E+20)
         self.cursor.execute(INSERT_RECIPIENT, (uuid_int, email_recipient, date))
         self.database.commit()
     
-    def update_user_time(self, email_uuid:uuid.UUID):
+    def update_user_time(self, email_uuid):
         print(f"OPEN EMAIL UUID : {email_uuid}")
         date = datetime.datetime.now().timestamp()
-        uuid_int = email_uuid.int%(1E+20)
+        uuid_int = email_uuid%(1E+20)
         self.cursor.execute(OPENED_EMAIL, (uuid_int, date))
         self.database.commit()
 
