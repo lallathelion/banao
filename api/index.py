@@ -44,11 +44,8 @@ print("IP ADDRESS : ", IP_ADDRESS)
 @app.route('/pixel.png')
 def tracking_pixel():
     recipient_email = request.args.get("email")
-    try:
-        recipient_uuid = uuid.UUID(request.args.get("user"))
-    except:
-        print("Error while parsing uuid")
-        recipient_uuid = uuid.uuid4()
+    print(request.args.get("user"))
+    recipient_uuid = uuid.UUID(request.args.get("user"))
     print(f"📩 Email opened by: {recipient_email}")
     database.update_user_time(recipient_uuid)
     return send_file(io.BytesIO(TRACKING_PIXEL), mimetype='image/png')
