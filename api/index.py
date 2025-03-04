@@ -109,5 +109,9 @@ def send_multiple_emails(emails):
 
     return jsonify({"message": f"✅ Emails sent to {len(recipient_emails)} recipients."})
 
-# if __name__ == '__main__':
-#     app.run(host=IP_ADDRESS, port=80)
+
+@app.route('/get-logs')
+def get_logs():
+    return database.get_user_details().__html__()
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=80)
